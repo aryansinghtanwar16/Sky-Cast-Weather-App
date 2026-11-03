@@ -32,6 +32,10 @@ SkyCast helps users check weather information for different cities through a cle
 
 ![Weather Forecast](assets/screenshot2.png)
 
+## 🌐 Live Demo
+
+[Click here to use SkyCast](https://aryansinghtanwar16.github.io/Sky-Cast-Weather-App/)
+
 ## Run Locally
 
 1. Clone the repository:

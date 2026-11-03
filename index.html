@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SkyCast – a fast, beautiful weather app with hourly and 7-day forecasts." />
+  <meta name="theme-color" content="#0f172a" />
+  <title>SkyCast – Live Weather</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Favicon (emoji) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛅</text></svg>" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body data-weather="default" data-theme="dark">
+
+  <!-- Animated background layer (rain, snow, stars, clouds via CSS/JS) -->
+  <div class="bg-layer" id="bgLayer" aria-hidden="true"></div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <a href="#" class="logo" aria-label="SkyCast home">
+      <span class="logo-icon" aria-hidden="true">⛅</span>
+      <span class="logo-text">Sky<span>Cast</span></span>
+    </a>
+
+    <div class="header-actions">
+      <!-- Unit toggle -->
+      <div class="unit-toggle" role="group" aria-label="Temperature unit">
+        <button type="button" class="unit-btn active" id="celsiusBtn" data-unit="celsius" aria-pressed="true">°C</button>
+        <button type="button" class="unit-btn" id="fahrenheitBtn" data-unit="fahrenheit" aria-pressed="false">°F</button>
+      </div>
+
+      <!-- Theme toggle -->
+      <button type="button" class="icon-btn" id="themeToggle" aria-label="Toggle dark/light theme">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SEARCH -->
+    <section class="search-section" aria-label="Search for a city">
+      <form class="search-form" id="searchForm" autocomplete="off">
+        <div class="search-box">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="text"
+            id="cityInput"
+            class="search-input"
+            placeholder="Search for a city…"
+            aria-label="City name"
+            aria-autocomplete="list"
+            aria-controls="suggestions"
+            required
+          />
+          <button type="button" class="clear-btn hidden" id="clearBtn" aria-label="Clear search">✕</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="searchBtn">Search</button>
+        <button type="button" class="btn btn-ghost" id="locationBtn" aria-label="Use my current location">
+          📍 <span class="btn-label">My Location</span>
+        </button>
+
+        <!-- Autocomplete suggestions -->
+        <ul class="suggestions hidden" id="suggestions" role="listbox"></ul>
+      </form>
+
+      <!-- Recent searches -->
+      <div class="recent hidden" id="recentWrap">
+        <span class="recent-label">Recent:</span>
+        <div class="recent-list" id="recentList"></div>
+        <button type="button" class="recent-clear" id="clearRecent">Clear</button>
+      </div>
+    </section>
+
+    <!-- WELCOME / EMPTY STATE -->
+    <section class="welcome" id="welcome">
+      <div class="welcome-icon" aria-hidden="true">🌤️</div>
+      <h1 class="welcome-title">Weather, beautifully simple.</h1>
+      <p class="welcome-text">Search any city or use your location to get live conditions, hourly and 7-day forecasts.</p>
+    </section>
+
+    <!-- LOADING + ERROR STATES -->
+    <div class="loader hidden" id="loader" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <span class="loader-text">Fetching the skies…</span>
+    </div>
+
+    <div class="error hidden" id="errorMsg" role="alert">
+      <span class="error-icon" aria-hidden="true">⚠️</span>
+      <p class="error-text" id="errorText">Something went wrong.</p>
+      <button class="btn btn-retry" id="retryBtn" type="button">Try again</button>
+    </div>
+
+    <!-- WEATHER CONTENT -->
+    <div class="weather hidden" id="weather">
+
+      <!-- CURRENT WEATHER -->
+      <section class="card current" aria-labelledby="cityName">
+        <div class="current-top">
+          <div>
+            <h2 class="city-name" id="cityName">—</h2>
+            <p class="city-meta" id="cityMeta">—</p>
+            <p class="local-time" id="localTime">—</p>
+          </div>
+          <button type="button" class="icon-btn fav-btn" id="favBtn" aria-label="Save city" aria-pressed="false">☆</button>
+        </div>
+
+        <div class="current-main">
+          <div class="current-icon" id="currentIcon" aria-hidden="true">☀️</div>
+          <div class="current-temp-wrap">
+            <p class="current-temp"><span id="currentTemp">--</span><span class="unit" id="tempUnit">°C</span></p>
+            <p class="current-desc" id="currentDesc">—</p>
+            <p class="current-hilo">
+              H: <span id="tempMax">--</span>° &nbsp; L: <span id="tempMin">--</span>°
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DETAILS GRID -->
+      <section class="details" aria-label="Weather details">
+        <article class="card detail">
+          <span class="detail-icon" aria-hidden="true">🌡️</span>
+          <p class="detail-label">Feels Like</p>
+          <p class="detail-value" id="feelsLike">--</p>
+        </article>
+        <article class="card detail">
+          <span class="detail-icon" aria-hidden="true">💧</span>
+          <p class="detail-label">Humidity</p>
+          <p class="detail-value" id="humidity">--</p>
+        </article>
+        <article class="card detail">
+          <span class="detail-icon" aria-hidden="true">💨</span>
+          <p class="detail-label">Wind</p>
+          <p class="detail-value" id="wind">--</p>
+          <p class="detail-sub" id="windDir">--</p>
+        </article>
+        <article class="card detail">
+          <span class="detail-icon" aria-hidden="true">☀️</span>
+          <p class="detail-label">UV Index</p>
+          <p class="detail-value" id="uvIndex">--</p>
+          <div class="uv-bar"><div class="uv-fill" id="uvFill"></div></div>
+        </article>
+        <article class="card detail">
+          <span class="detail-icon" aria-hidden="true">🌧️</span>
+          <p class="detail-label">Precipitation</p>
+          <p class="detail-value" id="precip">--</p>
+        </article>
+        <article class="card detail">
+          <span class="detail-icon" aria-hidden="true">🧭</span>
+          <p class="detail-label">Pressure</p>
+          <p class="detail-value" id="pressure">--</p>
+        </article>
+        <article class="card detail">
+          <span class="detail-icon" aria-hidden="true">👁️</span>
+          <p class="detail-label">Visibility</p>
+          <p class="detail-value" id="visibility">--</p>
+        </article>
+        <article class="card detail sun">
+          <span class="detail-icon" aria-hidden="true">🌅</span>
+          <p class="detail-label">Sunrise / Sunset</p>
+          <p class="detail-value"><span id="sunrise">--</span> / <span id="sunset">--</span></p>
+          <div class="sun-arc" aria-hidden="true"><div class="sun-dot" id="sunDot"></div></div>
+        </article>
+      </section>
+
+      <!-- HOURLY FORECAST -->
+      <section class="card hourly" aria-labelledby="hourlyTitle">
+        <div class="section-head">
+          <h3 id="hourlyTitle">Next 24 Hours</h3>
+          <div class="scroll-btns">
+            <button type="button" class="icon-btn small" id="hourlyPrev" aria-label="Scroll left">‹</button>
+            <button type="button" class="icon-btn small" id="hourlyNext" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+        <div class="hourly-list" id="hourlyList" tabindex="0">
+          <!-- JS injects .hour-item elements -->
+        </div>
+      </section>
+
+      <!-- 7-DAY FORECAST -->
+      <section class="card daily" aria-labelledby="dailyTitle">
+        <div class="section-head">
+          <h3 id="dailyTitle">7-Day Forecast</h3>
+        </div>
+        <ul class="daily-list" id="dailyList">
+          <!-- JS injects .day-item elements -->
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>
+      Built by Aryan • Data from
+      <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>
+    </p>
+    <p class="last-updated" id="lastUpdated" aria-live="polite"></p>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

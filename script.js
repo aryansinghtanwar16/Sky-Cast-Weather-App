@@ -1,7 +1,7 @@
-/* =========================================================
+/*
    SkyCast — script.js
    Data: Open-Meteo (forecast + geocoding), BigDataCloud (reverse geocode)
-   ========================================================= */
+   */
 'use strict';
 
 /* ---------- CONFIG ---------- */
